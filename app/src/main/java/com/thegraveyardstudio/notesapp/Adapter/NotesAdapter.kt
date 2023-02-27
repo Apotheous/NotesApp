@@ -2,6 +2,7 @@ package com.thegraveyardstudio.notesapp.Adapter
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.OnReceiveContentListener
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -10,11 +11,12 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.thegraveyardstudio.notesapp.Models.Note
 import com.thegraveyardstudio.notesapp.R
+import kotlin.random.Random
 
-class NotesAdapter(private val context : Context) : RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
+class NotesAdapter(private val context : Context, val listener: NotesClickListener) : RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
 
-    private val NotesList : ArrayList<Note>()
-    private val fullList : ArrayList<Note>()
+    private val NotesList = ArrayList<Note>()
+    private val fullList = ArrayList<Note>()
 
 
 
@@ -34,6 +36,18 @@ class NotesAdapter(private val context : Context) : RecyclerView.Adapter<NotesAd
         holder.date.text = currentNote.date
         holder.date.isSelected = true
 
+
+        holder.notes_layout.setCardBackgroundColor(holder.itemView.resources.getColor(randomColor(),null))
+
+        holder.notes_layout.setOnClickListener{
+            listener.onItemClicked(NotesList[holder.adapterPosition])
+        }
+
+        holder.notes_layout.setOnLongClickListener{
+            listener.onLongItemClicked(NotesList[holder.adapterPosition],holder.notes_layout)
+            true
+        }
+
     }
 
     override fun getItemCount(): Int {
@@ -41,6 +55,37 @@ class NotesAdapter(private val context : Context) : RecyclerView.Adapter<NotesAd
     }
 
 
+    fun updateList(newList : List<Note>){
+        fullList.clear()
+        fullList.addAll(newList)
+
+
+        NotesList.clear()
+        NotesList.addAll(fullList)
+        notifyDataSetChanged()
+
+
+    }
+
+
+    fun filterList(search: String){
+        NotesList.clear()
+        for(item in fullList){
+            if (item.title?.lowercase()?.contains(search.lowercase()) == true ||
+                    item.note?.lowercase()?.contains(search.lowercase())== true ){
+                NotesList.add(item)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
+
+    fun randomColor(): Int {
+        val red = Random.nextInt(256)
+        val green = Random.nextInt(256)
+        val blue = Random.nextInt(256)
+        return 0xff000000.toInt() or (red shl 16) or (green shl 8) or blue
+    }
 
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val notes_layout = itemView.findViewById<CardView>(R.id.card_layout)
@@ -49,4 +94,9 @@ class NotesAdapter(private val context : Context) : RecyclerView.Adapter<NotesAd
         val date = itemView.findViewById<TextView>(R.id.tv_date)
 
     }
+    interface NotesClickListener{
+        fun onItemClicked(note:Note)
+        fun onLongItemClicked(note:Note, cardView: CardView)
+    }
+
 }
