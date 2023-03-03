@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import com.thegraveyardstudio.notesapp.Models.Note
 import android.widget.Toast
 import androidx.activity.OnBackPressedDispatcher
+import com.thegraveyardstudio.notesapp.Database.NoteDatabase
+import com.thegraveyardstudio.notesapp.Database.NotesRepository
 import com.thegraveyardstudio.notesapp.databinding.ActivityAddNoteBinding
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,6 +18,7 @@ class AddNote : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddNoteBinding
     private lateinit var note:Note
+    lateinit var repository: NotesRepository
     private lateinit var old_note:Note
     var isUpdate = false
 
@@ -25,6 +28,8 @@ class AddNote : AppCompatActivity() {
 
         binding = ActivityAddNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val dao= NoteDatabase.getDatabase(application).getNoteDao()
+        repository= NotesRepository(dao)
 
         try {
             old_note = intent.getSerializableExtra("current_note") as Note
@@ -36,7 +41,7 @@ class AddNote : AppCompatActivity() {
             e.printStackTrace()
         }
 
-        binding.imgCheck.setOnClickListener {
+        binding.check.setOnClickListener {
             val title = binding.etTitle.text.toString()
             val note_desc = binding.etNote.text.toString()
 
@@ -65,8 +70,9 @@ class AddNote : AppCompatActivity() {
 
 
 
-        binding.imgBackArrow.setOnClickListener {
-OnBackPressedDispatcher().onBackPressed()
+        binding.back.setOnClickListener {
+            print("tapped")
+            onBackPressed()
         }
 
 
